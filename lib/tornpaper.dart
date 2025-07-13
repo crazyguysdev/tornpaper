@@ -109,7 +109,7 @@ class _TornPaperState extends State<TornPaper> {
             widget.hasShadow,
             widget.shadowOffset,
             widget.shadowColor),
-        child: ClipPath(clipper: ClipPathClass(getPath(constraints)), child: widget.child),
+        child: widget.child,
       ),
     );
   }
