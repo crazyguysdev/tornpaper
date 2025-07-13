@@ -3,7 +3,6 @@ library tornpaper;
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:tornpaper/clippath.dart';
 import 'package:tornpaper/tornpainterbackground.dart';
 import 'package:tornpaper/tornpainterborder.dart';
@@ -50,6 +49,12 @@ class TornPaper extends StatefulWidget {
   /// Color of the shadow
   final Color shadowColor;
 
+  /// Should wrap width to child widget
+  final bool shouldWrapWidth;
+
+  /// Should wrap width to child widget
+  final bool shouldWrapHeight;
+
   /// Constructor of TornPaper
   TornPaper(
       {this.child = const SizedBox.shrink(),
@@ -66,6 +71,8 @@ class TornPaper extends StatefulWidget {
       this.shadowOffset = const Offset(8.0, 8.0),
       this.shadowColor = Colors.black,
       this.hasShadow = true,
+      this.shouldWrapWidth = false,
+      this.shouldWrapHeight = false,
       Key? key})
       : assert(stepWidth > 0), assert(tornWidth > 0), super(key: key);
 
@@ -90,27 +97,26 @@ class _TornPaperState extends State<TornPaper> {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) => CustomPaint(
-        foregroundPainter: TornPainterBorder(getPath(constraints),
-            widget.hasBorder, widget.tornColor, widget.tornWidth),
+        foregroundPainter: TornPainterBorder(
+            getPath(constraints), widget.hasBorder, widget.tornColor, widget.tornWidth),
         painter: TornPainterBackground(
             getPath(constraints),
-            constraints.biggest.width,
-            constraints.biggest.height,
+            widget.shouldWrapWidth ? constraints.minWidth : constraints.maxWidth,
+            widget.shouldWrapHeight ? constraints.minHeight : constraints.maxHeight,
             widget.backgroundColor,
             widget.hasNoise,
             widget.noiseColor,
             widget.hasShadow,
             widget.shadowOffset,
             widget.shadowColor),
-        child: ClipPath(
-            clipper: ClipPathClass(getPath(constraints)), child: widget.child),
+        child: ClipPath(clipper: ClipPathClass(getPath(constraints)), child: widget.child),
       ),
     );
   }
 
   Path getPath(BoxConstraints constraints) {
-    final maxWidth = constraints.biggest.width;
-    final maxHeight = constraints.maxHeight;
+    final maxWidth = widget.shouldWrapWidth ? constraints.minWidth : constraints.maxWidth;
+    final maxHeight = widget.shouldWrapHeight ? constraints.minHeight : constraints.maxHeight;
     if (maxWidth == _lastWidth && maxHeight == _lastHeight) {
       return _lastPath;
     }
